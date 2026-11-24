@@ -1,0 +1,6 @@
+delay_group,orders,average_review_score
+1-3 Days Late,33,3.16
+15+ Days Late,28,1.89
+4-7 Days Late,29,2.18
+8-14 Days Late,35,1.51
+On Time,592,4.18

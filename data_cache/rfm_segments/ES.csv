@@ -1,0 +1,7 @@
+customer_segment,customers,avg_recency,avg_frequency,avg_monetary
+Others,1140,143.44,1.01,142.52
+Hibernating,767,396.14,1.03,129.32
+Potential Loyalists,16,85.94,2.0,311.18
+At Risk,2,380.5,3.0,232.49
+Champions,2,133.5,5.0,567.97
+Loyal Customers,1,345.0,4.0,404.8
