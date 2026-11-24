@@ -2,9 +2,7 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 
-from src.ai_assistant import (
-    analyze_question
-)
+from src.ai_assistant import analyze_question
 
 from src.analytics import (
     get_states,
@@ -56,6 +54,48 @@ RED = "#FF6B6B"
 SLATE = "#94A3B8"
 
 GRID = "rgba(148,163,184,0.12)"
+
+
+# ==================================================
+# FRIENDLY PLOT LABELS
+# ==================================================
+
+PLOT_LABELS = {
+    "revenue": "Revenue",
+    "orders": "Orders",
+    "average_order_value": "Average Order Value",
+    "late_delivery_rate": "Late Delivery Rate",
+    "average_review_score": "Average Review Score",
+    "average_delivery_days": "Average Delivery Days",
+    "average_freight_value": "Average Freight Value",
+    "customer_state": "Customer State",
+    "seller_state": "Seller State",
+    "seller_id": "Seller",
+    "seller": "Seller",
+    "product_category": "Product Category",
+    "product_id": "Product",
+    "product": "Product",
+    "items_sold": "Items Sold",
+    "total_reviews": "Total Reviews",
+    "customers": "Customers",
+    "customer_type": "Customer Type",
+    "customer_segment": "Customer Segment",
+    "avg_recency": "Average Recency",
+    "avg_frequency": "Average Frequency",
+    "avg_monetary": "Average Monetary Value",
+    "delivery_status": "Delivery Status",
+    "delay_group": "Delay Severity",
+    "review_score": "Review Score",
+    "month": "Month",
+    "mom_growth_pct": "Monthly Growth",
+    "order_bucket": "Orders per Customer",
+    "state_relationship": "Marketplace Geography",
+    "retention_rate": "Retention Rate",
+    "cohort_index": "Months Since First Purchase",
+    "cohort": "Cohort",
+    "cohort_month": "Cohort Month",
+    "cohort_size": "Cohort Size"
+}
 
 
 # ==================================================
@@ -366,7 +406,13 @@ def style_pie_chart(
             b=35
         ),
 
-        height=height
+        height=height,
+
+        hoverlabel=dict(
+            bgcolor=CARD_2,
+            font_color=WHITE,
+            bordercolor=BORDER
+        )
     )
 
     return fig
@@ -440,10 +486,15 @@ def create_dynamic_chart(
 
         fig = px.line(
             data,
+
             x="month",
             y="revenue",
+
             markers=True,
-            title="Monthly Revenue"
+
+            title="Monthly Revenue",
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
@@ -455,6 +506,12 @@ def create_dynamic_chart(
             marker=dict(
                 size=5,
                 color=TEAL
+            ),
+
+            hovertemplate=(
+                "<b>%{x}</b><br>"
+                "Revenue: %{y:,.0f} BRL"
+                "<extra></extra>"
             )
         )
 
@@ -493,10 +550,15 @@ def create_dynamic_chart(
 
         fig = px.line(
             data,
+
             x="month",
             y="mom_growth_pct",
+
             markers=True,
-            title="Month-over-Month Revenue Growth"
+
+            title="Month-over-Month Revenue Growth",
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
@@ -543,14 +605,25 @@ def create_dynamic_chart(
 
         fig = px.bar(
             df,
+
             x="revenue",
             y="customer_state",
+
             orientation="h",
-            title="Revenue by Customer State"
+
+            title="Revenue by Customer State",
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
-            marker_color=BLUE
+            marker_color=BLUE,
+
+            hovertemplate=(
+                "<b>%{y}</b><br>"
+                "Revenue: %{x:,.0f} BRL"
+                "<extra></extra>"
+            )
         )
 
         fig.update_layout(
@@ -595,14 +668,25 @@ def create_dynamic_chart(
 
         fig = px.bar(
             df,
+
             x="orders",
             y="customer_state",
+
             orientation="h",
-            title="Orders by Customer State"
+
+            title="Orders by Customer State",
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
-            marker_color=TEAL
+            marker_color=TEAL,
+
+            hovertemplate=(
+                "<b>%{y}</b><br>"
+                "Orders: %{x:,.0f}"
+                "<extra></extra>"
+            )
         )
 
         fig.update_layout(
@@ -647,14 +731,25 @@ def create_dynamic_chart(
 
         fig = px.bar(
             df,
+
             x="average_order_value",
             y="customer_state",
+
             orientation="h",
-            title="Average Order Value by State"
+
+            title="Average Order Value by State",
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
-            marker_color=AMBER
+            marker_color=AMBER,
+
+            hovertemplate=(
+                "<b>%{y}</b><br>"
+                "Average Order Value: %{x:,.2f} BRL"
+                "<extra></extra>"
+            )
         )
 
         fig.update_layout(
@@ -714,14 +809,17 @@ def create_dynamic_chart(
             hover_data={
                 "average_review_score": ":.2f",
                 "average_delivery_days": ":.2f",
-                "orders": True,
-                "revenue": ":,.0f"
+                "orders": ":,.0f",
+                "revenue": ":,.0f",
+                "late_delivery_rate": ":.1%"
             },
 
             title=(
                 "Revenue vs Late Delivery Rate "
                 "by State"
-            )
+            ),
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
@@ -782,11 +880,19 @@ def create_dynamic_chart(
 
             orientation="h",
 
-            title="Top Categories by Revenue"
+            title="Top Categories by Revenue",
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
-            marker_color=BLUE
+            marker_color=BLUE,
+
+            hovertemplate=(
+                "<b>%{y}</b><br>"
+                "Revenue: %{x:,.0f} BRL"
+                "<extra></extra>"
+            )
         )
 
         fig.update_layout(
@@ -847,14 +953,18 @@ def create_dynamic_chart(
             hover_name="product_category",
 
             hover_data={
-                "items_sold": True,
-                "total_reviews": True
+                "revenue": ":,.0f",
+                "average_review_score": ":.2f",
+                "items_sold": ":,.0f",
+                "total_reviews": ":,.0f"
             },
 
             title=(
                 "Category Revenue vs "
                 "Customer Satisfaction"
-            )
+            ),
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
@@ -930,17 +1040,19 @@ def create_dynamic_chart(
 
             orientation="h",
 
-            hover_data=[
-                "product_category",
-                "items_sold",
-                "revenue",
-                "total_reviews"
-            ],
+            hover_data={
+                "product_category": True,
+                "items_sold": ":,.0f",
+                "revenue": ":,.0f",
+                "total_reviews": ":,.0f"
+            },
 
             title=(
                 "High-Sales Products "
                 "with Weak Reviews"
-            )
+            ),
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
@@ -1007,12 +1119,15 @@ def create_dynamic_chart(
 
             orientation="h",
 
-            hover_data=[
-                "seller_state",
-                "orders"
-            ],
+            hover_data={
+                "seller_state": True,
+                "orders": ":,.0f",
+                "revenue": ":,.0f"
+            },
 
-            title="Top Sellers by Revenue"
+            title="Top Sellers by Revenue",
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
@@ -1067,11 +1182,19 @@ def create_dynamic_chart(
 
             orientation="h",
 
-            title="Revenue by Seller State"
+            title="Revenue by Seller State",
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
-            marker_color=TEAL
+            marker_color=TEAL,
+
+            hovertemplate=(
+                "<b>%{y}</b><br>"
+                "Revenue: %{x:,.0f} BRL"
+                "<extra></extra>"
+            )
         )
 
         fig.update_layout(
@@ -1130,7 +1253,9 @@ def create_dynamic_chart(
             color_discrete_map={
                 "Same State": TEAL,
                 "Different State": BLUE
-            }
+            },
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
@@ -1138,6 +1263,13 @@ def create_dynamic_chart(
 
             textfont=dict(
                 color=WHITE
+            ),
+
+            hovertemplate=(
+                "<b>%{label}</b><br>"
+                "Revenue: %{value:,.0f} BRL<br>"
+                "Share: %{percent}"
+                "<extra></extra>"
             )
         )
 
@@ -1188,7 +1320,9 @@ def create_dynamic_chart(
             color_discrete_map={
                 "Repeat Customer": TEAL,
                 "One-Time Customer": SLATE
-            }
+            },
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
@@ -1196,6 +1330,13 @@ def create_dynamic_chart(
 
             textfont=dict(
                 color=WHITE
+            ),
+
+            hovertemplate=(
+                "<b>%{label}</b><br>"
+                "Customers: %{value:,.0f}<br>"
+                "Share: %{percent}"
+                "<extra></extra>"
             )
         )
 
@@ -1235,7 +1376,9 @@ def create_dynamic_chart(
             x="order_bucket",
             y="customers",
 
-            title="Orders per Customer"
+            title="Orders per Customer",
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
@@ -1245,7 +1388,7 @@ def create_dynamic_chart(
         fig.update_layout(
             height=330,
 
-            xaxis_title="Orders",
+            xaxis_title="Orders per Customer",
             yaxis_title="Customers"
         )
 
@@ -1287,13 +1430,15 @@ def create_dynamic_chart(
 
             orientation="h",
 
-            hover_data=[
-                "avg_recency",
-                "avg_frequency",
-                "avg_monetary"
-            ],
+            hover_data={
+                "avg_recency": ":.1f",
+                "avg_frequency": ":.2f",
+                "avg_monetary": ":,.2f"
+            },
 
-            title="RFM Customer Segments"
+            title="RFM Customer Segments",
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
@@ -1403,7 +1548,9 @@ def create_dynamic_chart(
             title=(
                 "Customer Cohort Retention "
                 "After Acquisition"
-            )
+            ),
+
+            labels=PLOT_LABELS
         )
 
         fig.update_layout(
@@ -1413,7 +1560,7 @@ def create_dynamic_chart(
                 "Months Since First Purchase"
             ),
 
-            yaxis_title="Retention Rate %"
+            yaxis_title="Retention Rate"
         )
 
         style_chart(fig)
@@ -1458,7 +1605,9 @@ def create_dynamic_chart(
             color_discrete_map={
                 "On Time": TEAL,
                 "Late": RED
-            }
+            },
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
@@ -1466,6 +1615,13 @@ def create_dynamic_chart(
 
             textfont=dict(
                 color=WHITE
+            ),
+
+            hovertemplate=(
+                "<b>%{label}</b><br>"
+                "Orders: %{value:,.0f}<br>"
+                "Share: %{percent}"
+                "<extra></extra>"
             )
         )
 
@@ -1501,9 +1657,7 @@ def create_dynamic_chart(
 
         colors = []
 
-        for status in data[
-            "delivery_status"
-        ]:
+        for status in data["delivery_status"]:
 
             if status == "Late":
 
@@ -1528,11 +1682,19 @@ def create_dynamic_chart(
             title=(
                 "Review Score: "
                 "On-Time vs Late"
-            )
+            ),
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
-            marker_color=colors
+            marker_color=colors,
+
+            hovertemplate=(
+                "<b>%{x}</b><br>"
+                "Average Review Score: %{y:.2f}"
+                "<extra></extra>"
+            )
         )
 
         fig.update_layout(
@@ -1546,7 +1708,7 @@ def create_dynamic_chart(
             xaxis_title=None,
 
             yaxis_title=(
-                "Average Review"
+                "Average Review Score"
             )
         )
 
@@ -1587,11 +1749,19 @@ def create_dynamic_chart(
 
             title=(
                 "Late Delivery Rate by State"
-            )
+            ),
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
-            marker_color=RED
+            marker_color=RED,
+
+            hovertemplate=(
+                "<b>%{y}</b><br>"
+                "Late Delivery Rate: %{x:.1%}"
+                "<extra></extra>"
+            )
         )
 
         fig.update_xaxes(
@@ -1651,11 +1821,19 @@ def create_dynamic_chart(
 
             title=(
                 "Average Delivery Time by State"
-            )
+            ),
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
-            marker_color=AMBER
+            marker_color=AMBER,
+
+            hovertemplate=(
+                "<b>%{y}</b><br>"
+                "Average Delivery Days: %{x:.1f}"
+                "<extra></extra>"
+            )
         )
 
         fig.update_layout(
@@ -1711,11 +1889,19 @@ def create_dynamic_chart(
 
             title=(
                 "Average Freight Value by State"
-            )
+            ),
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
-            marker_color=AMBER
+            marker_color=AMBER,
+
+            hovertemplate=(
+                "<b>%{y}</b><br>"
+                "Average Freight Value: %{x:,.2f} BRL"
+                "<extra></extra>"
+            )
         )
 
         fig.update_layout(
@@ -1782,9 +1968,7 @@ def create_dynamic_chart(
             )
 
             for group
-            in data[
-                "delay_group"
-            ]
+            in data["delay_group"]
         ]
 
         fig = px.bar(
@@ -1802,11 +1986,19 @@ def create_dynamic_chart(
             title=(
                 "Review Score by "
                 "Delivery Delay Severity"
-            )
+            ),
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
-            marker_color=colors
+            marker_color=colors,
+
+            hovertemplate=(
+                "<b>%{x}</b><br>"
+                "Average Review Score: %{y:.2f}"
+                "<extra></extra>"
+            )
         )
 
         fig.update_layout(
@@ -1820,7 +2012,7 @@ def create_dynamic_chart(
             xaxis_title=None,
 
             yaxis_title=(
-                "Average Review"
+                "Average Review Score"
             )
         )
 
@@ -1864,7 +2056,9 @@ def create_dynamic_chart(
             title=(
                 "Delivery Time by "
                 "Review Score"
-            )
+            ),
+
+            labels=PLOT_LABELS
         )
 
         fig.update_traces(
@@ -1875,6 +2069,12 @@ def create_dynamic_chart(
 
             marker=dict(
                 size=8
+            ),
+
+            hovertemplate=(
+                "Review Score: %{x}<br>"
+                "Average Delivery Days: %{y:.1f}"
+                "<extra></extra>"
             )
         )
 
@@ -2132,7 +2332,9 @@ else:
 
         markers=True,
 
-        title="Monthly Revenue Trend"
+        title="Monthly Revenue Trend",
+
+        labels=PLOT_LABELS
     )
 
     fig_monthly.update_traces(
@@ -2144,6 +2346,12 @@ else:
         marker=dict(
             size=5,
             color=TEAL
+        ),
+
+        hovertemplate=(
+            "<b>%{x}</b><br>"
+            "Revenue: %{y:,.0f} BRL"
+            "<extra></extra>"
         )
     )
 
@@ -2239,14 +2447,18 @@ with left_col:
             hover_name="product_category",
 
             hover_data={
-                "items_sold": True,
-                "total_reviews": True
+                "revenue": ":,.0f",
+                "average_review_score": ":.2f",
+                "items_sold": ":,.0f",
+                "total_reviews": ":,.0f"
             },
 
             title=(
                 "Category Revenue vs "
                 "Customer Satisfaction"
-            )
+            ),
+
+            labels=PLOT_LABELS
         )
 
         fig_category.update_traces(
@@ -2272,7 +2484,7 @@ with left_col:
             xaxis_title="Revenue",
 
             yaxis_title=(
-                "Average Review"
+                "Average Review Score"
             )
         )
 
@@ -2339,7 +2551,9 @@ with right_col:
             color_discrete_map={
                 "Repeat Customer": TEAL,
                 "One-Time Customer": SLATE
-            }
+            },
+
+            labels=PLOT_LABELS
         )
 
         fig_repeat.update_traces(
@@ -2347,6 +2561,13 @@ with right_col:
 
             textfont=dict(
                 color=WHITE
+            ),
+
+            hovertemplate=(
+                "<b>%{label}</b><br>"
+                "Customers: %{value:,.0f}<br>"
+                "Share: %{percent}"
+                "<extra></extra>"
             )
         )
 
@@ -2419,13 +2640,16 @@ else:
 
         orientation="h",
 
-        hover_data=[
-            "avg_recency",
-            "avg_frequency",
-            "avg_monetary"
-        ],
+        hover_data={
+            "customers": ":,.0f",
+            "avg_recency": ":.1f",
+            "avg_frequency": ":.2f",
+            "avg_monetary": ":,.2f"
+        },
 
-        title="RFM Customer Segments"
+        title="RFM Customer Segments",
+
+        labels=PLOT_LABELS
     )
 
     fig_rfm.update_traces(
@@ -2550,11 +2774,19 @@ with delivery_left:
             title=(
                 "Review Score by "
                 "Delay Severity"
-            )
+            ),
+
+            labels=PLOT_LABELS
         )
 
         fig_delay.update_traces(
-            marker_color=delay_colors
+            marker_color=delay_colors,
+
+            hovertemplate=(
+                "<b>%{x}</b><br>"
+                "Average Review Score: %{y:.2f}"
+                "<extra></extra>"
+            )
         )
 
         fig_delay.update_layout(
@@ -2568,7 +2800,7 @@ with delivery_left:
             xaxis_title=None,
 
             yaxis_title=(
-                "Average Review"
+                "Average Review Score"
             )
         )
 
@@ -2627,11 +2859,19 @@ with delivery_right:
             title=(
                 "States with Highest "
                 "Late Delivery Rates"
-            )
+            ),
+
+            labels=PLOT_LABELS
         )
 
         fig_state.update_traces(
-            marker_color=RED
+            marker_color=RED,
+
+            hovertemplate=(
+                "<b>Customer State: %{y}</b><br>"
+                "Late Delivery Rate: %{x:.1%}"
+                "<extra></extra>"
+            )
         )
 
         fig_state.update_xaxes(
