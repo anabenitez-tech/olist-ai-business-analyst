@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.express as px
+import pandas as pd
 
 from src.ai_assistant import (
     analyze_question
@@ -329,7 +330,10 @@ def style_chart(fig):
 # PIE CHART STYLE
 # ==================================================
 
-def style_pie_chart(fig, height=340):
+def style_pie_chart(
+    fig,
+    height=340
+):
 
     fig.update_layout(
         paper_bgcolor=CARD,
@@ -369,6 +373,29 @@ def style_pie_chart(fig, height=340):
 
 
 # ==================================================
+# SAFE NUMERIC CONVERSION
+# ==================================================
+
+def convert_numeric_columns(
+    dataframe,
+    columns
+):
+
+    df = dataframe.copy()
+
+    for column in columns:
+
+        if column in df.columns:
+
+            df[column] = pd.to_numeric(
+                df[column],
+                errors="coerce"
+            )
+
+    return df
+
+
+# ==================================================
 # AI DYNAMIC CHART
 # ==================================================
 
@@ -395,6 +422,22 @@ def create_dynamic_chart(
 
     if analysis == "monthly_revenue":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "revenue"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "revenue"
+            ]
+        )
+
+        if data.empty:
+            return None
+
         fig = px.line(
             data,
             x="month",
@@ -408,6 +451,7 @@ def create_dynamic_chart(
                 color=BLUE,
                 width=3
             ),
+
             marker=dict(
                 size=5,
                 color=TEAL
@@ -430,6 +474,22 @@ def create_dynamic_chart(
     # ==================================================
 
     if analysis == "monthly_growth":
+
+        data = convert_numeric_columns(
+            data,
+            [
+                "mom_growth_pct"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "mom_growth_pct"
+            ]
+        )
+
+        if data.empty:
+            return None
 
         fig = px.line(
             data,
@@ -463,7 +523,23 @@ def create_dynamic_chart(
 
     if analysis == "revenue_by_state":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "revenue"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "revenue"
+            ]
+        )
+
         df = data.head(15)
+
+        if df.empty:
+            return None
 
         fig = px.bar(
             df,
@@ -481,7 +557,9 @@ def create_dynamic_chart(
             yaxis=dict(
                 autorange="reversed"
             ),
+
             height=360,
+
             xaxis_title="Revenue",
             yaxis_title=None
         )
@@ -497,7 +575,23 @@ def create_dynamic_chart(
 
     if analysis == "orders_by_state":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "orders"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "orders"
+            ]
+        )
+
         df = data.head(15)
+
+        if df.empty:
+            return None
 
         fig = px.bar(
             df,
@@ -515,7 +609,9 @@ def create_dynamic_chart(
             yaxis=dict(
                 autorange="reversed"
             ),
+
             height=360,
+
             xaxis_title="Orders",
             yaxis_title=None
         )
@@ -531,7 +627,23 @@ def create_dynamic_chart(
 
     if analysis == "aov_by_state":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "average_order_value"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "average_order_value"
+            ]
+        )
+
         df = data.head(15)
+
+        if df.empty:
+            return None
 
         fig = px.bar(
             df,
@@ -549,7 +661,9 @@ def create_dynamic_chart(
             yaxis=dict(
                 autorange="reversed"
             ),
+
             height=360,
+
             xaxis_title="Average Order Value",
             yaxis_title=None
         )
@@ -565,11 +679,36 @@ def create_dynamic_chart(
 
     if analysis == "state_performance":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "revenue",
+                "late_delivery_rate",
+                "orders",
+                "average_review_score",
+                "average_delivery_days"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "revenue",
+                "late_delivery_rate",
+                "orders"
+            ]
+        )
+
+        if data.empty:
+            return None
+
         fig = px.scatter(
             data,
+
             x="revenue",
             y="late_delivery_rate",
+
             size="orders",
+
             hover_name="customer_state",
 
             hover_data={
@@ -603,6 +742,7 @@ def create_dynamic_chart(
 
         fig.update_layout(
             height=380,
+
             xaxis_title="Revenue",
             yaxis_title="Late Delivery Rate"
         )
@@ -618,11 +758,30 @@ def create_dynamic_chart(
 
     if analysis == "top_categories":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "revenue"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "revenue"
+            ]
+        )
+
+        if data.empty:
+            return None
+
         fig = px.bar(
             data,
+
             x="revenue",
             y="product_category",
+
             orientation="h",
+
             title="Top Categories by Revenue"
         )
 
@@ -634,7 +793,9 @@ def create_dynamic_chart(
             yaxis=dict(
                 autorange="reversed"
             ),
+
             height=360,
+
             xaxis_title="Revenue",
             yaxis_title=None
         )
@@ -650,11 +811,39 @@ def create_dynamic_chart(
 
     if analysis == "category_sales_vs_reviews":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "revenue",
+                "average_review_score",
+                "items_sold",
+                "total_reviews"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "revenue",
+                "average_review_score",
+                "items_sold"
+            ]
+        )
+
+        data = data[
+            data["items_sold"] > 0
+        ]
+
+        if data.empty:
+            return None
+
         fig = px.scatter(
             data,
+
             x="revenue",
             y="average_review_score",
+
             size="items_sold",
+
             hover_name="product_category",
 
             hover_data={
@@ -682,9 +871,17 @@ def create_dynamic_chart(
 
         fig.update_layout(
             height=380,
-            yaxis_range=[0, 5],
+
+            yaxis_range=[
+                0,
+                5
+            ],
+
             xaxis_title="Revenue",
-            yaxis_title="Average Review Score"
+
+            yaxis_title=(
+                "Average Review Score"
+            )
         )
 
         style_chart(fig)
@@ -698,6 +895,25 @@ def create_dynamic_chart(
 
     if analysis == "low_rated_products":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "average_review_score",
+                "items_sold",
+                "revenue",
+                "total_reviews"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "average_review_score"
+            ]
+        )
+
+        if data.empty:
+            return None
+
         df = data.copy()
 
         df["product"] = (
@@ -708,8 +924,10 @@ def create_dynamic_chart(
 
         fig = px.bar(
             df,
+
             x="average_review_score",
             y="product",
+
             orientation="h",
 
             hover_data=[
@@ -733,8 +951,14 @@ def create_dynamic_chart(
             yaxis=dict(
                 autorange="reversed"
             ),
-            xaxis_range=[0, 5],
+
+            xaxis_range=[
+                0,
+                5
+            ],
+
             height=420,
+
             xaxis_title="Average Review",
             yaxis_title=None
         )
@@ -750,6 +974,23 @@ def create_dynamic_chart(
 
     if analysis == "top_sellers":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "revenue",
+                "orders"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "revenue"
+            ]
+        )
+
+        if data.empty:
+            return None
+
         df = data.copy()
 
         df["seller"] = (
@@ -760,8 +1001,10 @@ def create_dynamic_chart(
 
         fig = px.bar(
             df,
+
             x="revenue",
             y="seller",
+
             orientation="h",
 
             hover_data=[
@@ -780,7 +1023,9 @@ def create_dynamic_chart(
             yaxis=dict(
                 autorange="reversed"
             ),
+
             height=360,
+
             xaxis_title="Revenue",
             yaxis_title=None
         )
@@ -796,13 +1041,32 @@ def create_dynamic_chart(
 
     if analysis == "seller_state_revenue":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "revenue"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "revenue"
+            ]
+        )
+
         df = data.head(15)
+
+        if df.empty:
+            return None
 
         fig = px.bar(
             df,
+
             x="revenue",
             y="seller_state",
+
             orientation="h",
+
             title="Revenue by Seller State"
         )
 
@@ -814,7 +1078,9 @@ def create_dynamic_chart(
             yaxis=dict(
                 autorange="reversed"
             ),
+
             height=360,
+
             xaxis_title="Revenue",
             yaxis_title=None
         )
@@ -830,10 +1096,28 @@ def create_dynamic_chart(
 
     if analysis == "marketplace_geography":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "revenue"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "revenue"
+            ]
+        )
+
+        if data.empty:
+            return None
+
         fig = px.pie(
             data,
+
             names="state_relationship",
             values="revenue",
+
             hole=0.60,
 
             title=(
@@ -851,6 +1135,7 @@ def create_dynamic_chart(
 
         fig.update_traces(
             textinfo="percent+label",
+
             textfont=dict(
                 color=WHITE
             )
@@ -870,12 +1155,33 @@ def create_dynamic_chart(
 
     if analysis == "repeat_purchase":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "customers"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "customers"
+            ]
+        )
+
+        if data.empty:
+            return None
+
         fig = px.pie(
             data,
+
             names="customer_type",
             values="customers",
+
             hole=0.62,
-            title="Customer Repeat Purchase Mix",
+
+            title=(
+                "Customer Repeat Purchase Mix"
+            ),
 
             color="customer_type",
 
@@ -887,6 +1193,7 @@ def create_dynamic_chart(
 
         fig.update_traces(
             textinfo="percent+label",
+
             textfont=dict(
                 color=WHITE
             )
@@ -906,10 +1213,28 @@ def create_dynamic_chart(
 
     if analysis == "orders_per_customer":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "customers"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "customers"
+            ]
+        )
+
+        if data.empty:
+            return None
+
         fig = px.bar(
             data,
+
             x="order_bucket",
             y="customers",
+
             title="Orders per Customer"
         )
 
@@ -919,6 +1244,7 @@ def create_dynamic_chart(
 
         fig.update_layout(
             height=330,
+
             xaxis_title="Orders",
             yaxis_title="Customers"
         )
@@ -934,10 +1260,31 @@ def create_dynamic_chart(
 
     if analysis == "rfm_segments":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "customers",
+                "avg_recency",
+                "avg_frequency",
+                "avg_monetary"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "customers"
+            ]
+        )
+
+        if data.empty:
+            return None
+
         fig = px.bar(
             data,
+
             x="customers",
             y="customer_segment",
+
             orientation="h",
 
             hover_data=[
@@ -957,7 +1304,9 @@ def create_dynamic_chart(
             yaxis=dict(
                 autorange="reversed"
             ),
+
             height=360,
+
             xaxis_title="Customers",
             yaxis_title=None
         )
@@ -972,6 +1321,25 @@ def create_dynamic_chart(
     # ==================================================
 
     if analysis == "cohort_retention":
+
+        data = convert_numeric_columns(
+            data,
+            [
+                "cohort_index",
+                "retention_rate",
+                "cohort_size"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "cohort_index",
+                "retention_rate"
+            ]
+        )
+
+        if data.empty:
+            return None
 
         df = data.copy()
 
@@ -1013,6 +1381,9 @@ def create_dynamic_chart(
             )
         ]
 
+        if df.empty:
+            return None
+
         df["cohort"] = (
             df["cohort_month"]
             .astype(str)
@@ -1021,9 +1392,12 @@ def create_dynamic_chart(
 
         fig = px.line(
             df,
+
             x="cohort_index",
             y="retention_rate",
+
             color="cohort",
+
             markers=True,
 
             title=(
@@ -1053,11 +1427,30 @@ def create_dynamic_chart(
 
     if analysis == "delivery_status":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "orders"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "orders"
+            ]
+        )
+
+        if data.empty:
+            return None
+
         fig = px.pie(
             data,
+
             names="delivery_status",
             values="orders",
+
             hole=0.62,
+
             title="Delivery Status",
 
             color="delivery_status",
@@ -1070,6 +1463,7 @@ def create_dynamic_chart(
 
         fig.update_traces(
             textinfo="percent+label",
+
             textfont=dict(
                 color=WHITE
             )
@@ -1088,6 +1482,22 @@ def create_dynamic_chart(
     # ==================================================
 
     if analysis == "review_vs_delivery":
+
+        data = convert_numeric_columns(
+            data,
+            [
+                "average_review_score"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "average_review_score"
+            ]
+        )
+
+        if data.empty:
+            return None
 
         colors = []
 
@@ -1109,8 +1519,10 @@ def create_dynamic_chart(
 
         fig = px.bar(
             data,
+
             x="delivery_status",
             y="average_review_score",
+
             text_auto=".2f",
 
             title=(
@@ -1124,10 +1536,18 @@ def create_dynamic_chart(
         )
 
         fig.update_layout(
-            yaxis_range=[0, 5],
+            yaxis_range=[
+                0,
+                5
+            ],
+
             height=330,
+
             xaxis_title=None,
-            yaxis_title="Average Review"
+
+            yaxis_title=(
+                "Average Review"
+            )
         )
 
         style_chart(fig)
@@ -1141,12 +1561,33 @@ def create_dynamic_chart(
 
     if analysis == "late_delivery_by_state":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "late_delivery_rate"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "late_delivery_rate"
+            ]
+        )
+
+        if data.empty:
+            return None
+
         fig = px.bar(
             data,
+
             x="late_delivery_rate",
             y="customer_state",
+
             orientation="h",
-            title="Late Delivery Rate by State"
+
+            title=(
+                "Late Delivery Rate by State"
+            )
         )
 
         fig.update_traces(
@@ -1161,8 +1602,13 @@ def create_dynamic_chart(
             yaxis=dict(
                 autorange="reversed"
             ),
+
             height=390,
-            xaxis_title="Late Delivery Rate",
+
+            xaxis_title=(
+                "Late Delivery Rate"
+            ),
+
             yaxis_title=None
         )
 
@@ -1177,14 +1623,35 @@ def create_dynamic_chart(
 
     if analysis == "delivery_days_by_state":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "average_delivery_days"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "average_delivery_days"
+            ]
+        )
+
         df = data.head(15)
+
+        if df.empty:
+            return None
 
         fig = px.bar(
             df,
+
             x="average_delivery_days",
             y="customer_state",
+
             orientation="h",
-            title="Average Delivery Time by State"
+
+            title=(
+                "Average Delivery Time by State"
+            )
         )
 
         fig.update_traces(
@@ -1195,8 +1662,13 @@ def create_dynamic_chart(
             yaxis=dict(
                 autorange="reversed"
             ),
+
             height=380,
-            xaxis_title="Average Delivery Days",
+
+            xaxis_title=(
+                "Average Delivery Days"
+            ),
+
             yaxis_title=None
         )
 
@@ -1211,14 +1683,35 @@ def create_dynamic_chart(
 
     if analysis == "freight_by_state":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "average_freight_value"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "average_freight_value"
+            ]
+        )
+
         df = data.head(15)
+
+        if df.empty:
+            return None
 
         fig = px.bar(
             df,
+
             x="average_freight_value",
             y="customer_state",
+
             orientation="h",
-            title="Average Freight Value by State"
+
+            title=(
+                "Average Freight Value by State"
+            )
         )
 
         fig.update_traces(
@@ -1229,8 +1722,13 @@ def create_dynamic_chart(
             yaxis=dict(
                 autorange="reversed"
             ),
+
             height=380,
-            xaxis_title="Average Freight Value",
+
+            xaxis_title=(
+                "Average Freight Value"
+            ),
+
             yaxis_title=None
         )
 
@@ -1244,6 +1742,22 @@ def create_dynamic_chart(
     # ==================================================
 
     if analysis == "delay_severity_reviews":
+
+        data = convert_numeric_columns(
+            data,
+            [
+                "average_review_score"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "average_review_score"
+            ]
+        )
+
+        if data.empty:
+            return None
 
         order = [
             "On Time",
@@ -1266,14 +1780,19 @@ def create_dynamic_chart(
                 group,
                 SLATE
             )
+
             for group
-            in data["delay_group"]
+            in data[
+                "delay_group"
+            ]
         ]
 
         fig = px.bar(
             data,
+
             x="delay_group",
             y="average_review_score",
+
             text_auto=".2f",
 
             category_orders={
@@ -1292,9 +1811,17 @@ def create_dynamic_chart(
 
         fig.update_layout(
             height=340,
-            yaxis_range=[0, 5],
+
+            yaxis_range=[
+                0,
+                5
+            ],
+
             xaxis_title=None,
-            yaxis_title="Average Review"
+
+            yaxis_title=(
+                "Average Review"
+            )
         )
 
         style_chart(fig)
@@ -1308,10 +1835,30 @@ def create_dynamic_chart(
 
     if analysis == "delivery_time_by_review":
 
+        data = convert_numeric_columns(
+            data,
+            [
+                "review_score",
+                "average_delivery_days"
+            ]
+        )
+
+        data = data.dropna(
+            subset=[
+                "review_score",
+                "average_delivery_days"
+            ]
+        )
+
+        if data.empty:
+            return None
+
         fig = px.line(
             data,
+
             x="review_score",
             y="average_delivery_days",
+
             markers=True,
 
             title=(
@@ -1333,8 +1880,12 @@ def create_dynamic_chart(
 
         fig.update_layout(
             height=330,
+
             xaxis_title="Review Score",
-            yaxis_title="Average Delivery Days"
+
+            yaxis_title=(
+                "Average Delivery Days"
+            )
         )
 
         style_chart(fig)
@@ -1366,9 +1917,6 @@ with header_center:
             use_container_width=True
         )
 
-
-    # TITLE
-
     st.markdown(
         "<h1 style='"
         "text-align:center;"
@@ -1383,9 +1931,6 @@ with header_center:
         "</h1>",
         unsafe_allow_html=True
     )
-
-
-    # SUBTITLE
 
     st.markdown(
         "<p style='"
@@ -1557,41 +2102,69 @@ monthly = get_monthly_revenue(
     selected_state
 )
 
-fig_monthly = px.line(
+monthly = convert_numeric_columns(
     monthly,
-    x="month",
-    y="revenue",
-    markers=True,
-    title="Monthly Revenue Trend"
+    [
+        "revenue"
+    ]
 )
 
-fig_monthly.update_traces(
-    line=dict(
-        color=BLUE,
-        width=3
-    ),
+monthly = monthly.dropna(
+    subset=[
+        "revenue"
+    ]
+)
 
-    marker=dict(
-        size=5,
-        color=TEAL
+if monthly.empty:
+
+    st.info(
+        "Not enough monthly revenue data "
+        f"is available for {selected_state}."
     )
-)
 
-fig_monthly.update_layout(
-    height=280,
-    xaxis_title=None,
-    yaxis_title="Revenue",
-    hovermode="x unified"
-)
+else:
 
-style_chart(
-    fig_monthly
-)
+    fig_monthly = px.line(
+        monthly,
 
-st.plotly_chart(
-    fig_monthly,
-    use_container_width=True
-)
+        x="month",
+        y="revenue",
+
+        markers=True,
+
+        title="Monthly Revenue Trend"
+    )
+
+    fig_monthly.update_traces(
+        line=dict(
+            color=BLUE,
+            width=3
+        ),
+
+        marker=dict(
+            size=5,
+            color=TEAL
+        )
+    )
+
+    fig_monthly.update_layout(
+        height=280,
+
+        xaxis_title=None,
+
+        yaxis_title="Revenue",
+
+        hovermode="x unified"
+    )
+
+    style_chart(
+        fig_monthly
+    )
+
+    st.plotly_chart(
+        fig_monthly,
+        use_container_width=True
+    )
 
 
 # ==================================================
@@ -1615,50 +2188,102 @@ with left_col:
         )
     )
 
-    fig_category = px.scatter(
-        category_data,
-        x="revenue",
-        y="average_review_score",
-        size="items_sold",
-        hover_name="product_category",
+    category_data = (
+        convert_numeric_columns(
+            category_data,
 
-        hover_data=[
-            "total_reviews"
-        ],
-
-        title=(
-            "Category Revenue vs "
-            "Customer Satisfaction"
+            [
+                "revenue",
+                "average_review_score",
+                "items_sold",
+                "total_reviews"
+            ]
         )
     )
 
-    fig_category.update_traces(
-        marker=dict(
-            color=BLUE,
-            opacity=0.75,
+    category_data = (
+        category_data.dropna(
+            subset=[
+                "revenue",
+                "average_review_score",
+                "items_sold"
+            ]
+        )
+    )
 
-            line=dict(
-                color=WHITE,
-                width=1
+    category_data = category_data[
+        category_data[
+            "items_sold"
+        ] > 0
+    ]
+
+
+    if category_data.empty:
+
+        st.info(
+            "Not enough category data is available "
+            f"for the selected state ({selected_state})."
+        )
+
+    else:
+
+        fig_category = px.scatter(
+            category_data,
+
+            x="revenue",
+
+            y="average_review_score",
+
+            size="items_sold",
+
+            hover_name="product_category",
+
+            hover_data={
+                "items_sold": True,
+                "total_reviews": True
+            },
+
+            title=(
+                "Category Revenue vs "
+                "Customer Satisfaction"
             )
         )
-    )
 
-    fig_category.update_layout(
-        height=350,
-        yaxis_range=[0, 5],
-        xaxis_title="Revenue",
-        yaxis_title="Average Review"
-    )
+        fig_category.update_traces(
+            marker=dict(
+                color=BLUE,
+                opacity=0.75,
 
-    style_chart(
-        fig_category
-    )
+                line=dict(
+                    color=WHITE,
+                    width=1
+                )
+            )
+        )
 
-    st.plotly_chart(
-        fig_category,
-        use_container_width=True
-    )
+        fig_category.update_layout(
+            height=350,
+
+            yaxis_range=[
+                0,
+                5
+            ],
+
+            xaxis_title="Revenue",
+
+            yaxis_title=(
+                "Average Review"
+            )
+        )
+
+        style_chart(
+            fig_category
+        )
+
+        st.plotly_chart(
+            fig_category,
+            use_container_width=True
+        )
 
 
 # ==================================================
@@ -1673,37 +2298,67 @@ with right_col:
         )
     )
 
-    fig_repeat = px.pie(
+    repeat_data = convert_numeric_columns(
         repeat_data,
-        names="customer_type",
-        values="customers",
-        hole=0.65,
-        title="Customer Purchase Behavior",
-
-        color="customer_type",
-
-        color_discrete_map={
-            "Repeat Customer": TEAL,
-            "One-Time Customer": SLATE
-        }
+        [
+            "customers"
+        ]
     )
 
-    fig_repeat.update_traces(
-        textinfo="percent",
-        textfont=dict(
-            color=WHITE
+    repeat_data = repeat_data.dropna(
+        subset=[
+            "customers"
+        ]
+    )
+
+
+    if repeat_data.empty:
+
+        st.info(
+            "Not enough repeat-purchase data is "
+            f"available for {selected_state}."
         )
-    )
 
-    style_pie_chart(
-        fig_repeat,
-        height=350
-    )
+    else:
 
-    st.plotly_chart(
-        fig_repeat,
-        use_container_width=True
-    )
+        fig_repeat = px.pie(
+            repeat_data,
+
+            names="customer_type",
+
+            values="customers",
+
+            hole=0.65,
+
+            title=(
+                "Customer Purchase Behavior"
+            ),
+
+            color="customer_type",
+
+            color_discrete_map={
+                "Repeat Customer": TEAL,
+                "One-Time Customer": SLATE
+            }
+        )
+
+        fig_repeat.update_traces(
+            textinfo="percent",
+
+            textfont=dict(
+                color=WHITE
+            )
+        )
+
+        style_pie_chart(
+            fig_repeat,
+            height=350
+        )
+
+        st.plotly_chart(
+            fig_repeat,
+            use_container_width=True
+        )
 
 
 # ==================================================
@@ -1729,42 +2384,74 @@ rfm_data = get_rfm_segments(
     selected_state
 )
 
-fig_rfm = px.bar(
+rfm_data = convert_numeric_columns(
     rfm_data,
-    x="customers",
-    y="customer_segment",
-    orientation="h",
 
-    hover_data=[
+    [
+        "customers",
         "avg_recency",
         "avg_frequency",
         "avg_monetary"
-    ],
-
-    title="RFM Customer Segments"
+    ]
 )
 
-fig_rfm.update_traces(
-    marker_color=TEAL
+rfm_data = rfm_data.dropna(
+    subset=[
+        "customers"
+    ]
 )
 
-fig_rfm.update_layout(
-    yaxis=dict(
-        autorange="reversed"
-    ),
-    height=310,
-    xaxis_title="Customers",
-    yaxis_title=None
-)
 
-style_chart(
-    fig_rfm
-)
+if rfm_data.empty:
 
-st.plotly_chart(
-    fig_rfm,
-    use_container_width=True
-)
+    st.info(
+        "Not enough RFM data is available "
+        f"for {selected_state}."
+    )
+
+else:
+
+    fig_rfm = px.bar(
+        rfm_data,
+
+        x="customers",
+        y="customer_segment",
+
+        orientation="h",
+
+        hover_data=[
+            "avg_recency",
+            "avg_frequency",
+            "avg_monetary"
+        ],
+
+        title="RFM Customer Segments"
+    )
+
+    fig_rfm.update_traces(
+        marker_color=TEAL
+    )
+
+    fig_rfm.update_layout(
+        yaxis=dict(
+            autorange="reversed"
+        ),
+
+        height=310,
+
+        xaxis_title="Customers",
+
+        yaxis_title=None
+    )
+
+    style_chart(
+        fig_rfm
+    )
+
+    st.plotly_chart(
+        fig_rfm,
+        use_container_width=True
+    )
 
 
 # ==================================================
@@ -1796,69 +2483,103 @@ with delivery_left:
         )
     )
 
-    delay_order = [
-        "On Time",
-        "1-3 Days Late",
-        "4-7 Days Late",
-        "8-14 Days Late",
-        "15+ Days Late"
-    ]
-
-    delay_color_map = {
-        "On Time": TEAL,
-        "1-3 Days Late": AMBER,
-        "4-7 Days Late": AMBER,
-        "8-14 Days Late": RED,
-        "15+ Days Late": RED
-    }
-
-    delay_colors = [
-        delay_color_map.get(
-            group,
-            SLATE
-        )
-
-        for group
-        in delay_data[
-            "delay_group"
-        ]
-    ]
-
-    fig_delay = px.bar(
+    delay_data = convert_numeric_columns(
         delay_data,
-        x="delay_group",
-        y="average_review_score",
-        text_auto=".2f",
+        [
+            "average_review_score"
+        ]
+    )
 
-        category_orders={
-            "delay_group": delay_order
-        },
+    delay_data = delay_data.dropna(
+        subset=[
+            "average_review_score"
+        ]
+    )
 
-        title=(
-            "Review Score by "
-            "Delay Severity"
+
+    if delay_data.empty:
+
+        st.info(
+            "Not enough delivery-delay data is "
+            f"available for {selected_state}."
         )
-    )
 
-    fig_delay.update_traces(
-        marker_color=delay_colors
-    )
+    else:
 
-    fig_delay.update_layout(
-        height=310,
-        yaxis_range=[0, 5],
-        xaxis_title=None,
-        yaxis_title="Average Review"
-    )
+        delay_order = [
+            "On Time",
+            "1-3 Days Late",
+            "4-7 Days Late",
+            "8-14 Days Late",
+            "15+ Days Late"
+        ]
 
-    style_chart(
-        fig_delay
-    )
+        delay_color_map = {
+            "On Time": TEAL,
+            "1-3 Days Late": AMBER,
+            "4-7 Days Late": AMBER,
+            "8-14 Days Late": RED,
+            "15+ Days Late": RED
+        }
 
-    st.plotly_chart(
-        fig_delay,
-        use_container_width=True
-    )
+        delay_colors = [
+            delay_color_map.get(
+                group,
+                SLATE
+            )
+
+            for group
+            in delay_data[
+                "delay_group"
+            ]
+        ]
+
+        fig_delay = px.bar(
+            delay_data,
+
+            x="delay_group",
+
+            y="average_review_score",
+
+            text_auto=".2f",
+
+            category_orders={
+                "delay_group": delay_order
+            },
+
+            title=(
+                "Review Score by "
+                "Delay Severity"
+            )
+        )
+
+        fig_delay.update_traces(
+            marker_color=delay_colors
+        )
+
+        fig_delay.update_layout(
+            height=310,
+
+            yaxis_range=[
+                0,
+                5
+            ],
+
+            xaxis_title=None,
+
+            yaxis_title=(
+                "Average Review"
+            )
+        )
+
+        style_chart(
+            fig_delay
+        )
+
+        st.plotly_chart(
+            fig_delay,
+            use_container_width=True
+        )
 
 
 # ==================================================
@@ -1871,43 +2592,74 @@ with delivery_right:
         get_late_delivery_by_state()
     )
 
-    fig_state = px.bar(
-        late_state.head(10),
-        x="late_delivery_rate",
-        y="customer_state",
-        orientation="h",
+    late_state = convert_numeric_columns(
+        late_state,
+        [
+            "late_delivery_rate"
+        ]
+    )
 
-        title=(
-            "States with Highest "
-            "Late Delivery Rates"
+    late_state = late_state.dropna(
+        subset=[
+            "late_delivery_rate"
+        ]
+    )
+
+
+    if late_state.empty:
+
+        st.info(
+            "Late-delivery state data "
+            "is not available."
         )
-    )
 
-    fig_state.update_traces(
-        marker_color=RED
-    )
+    else:
 
-    fig_state.update_xaxes(
-        tickformat=".0%"
-    )
+        fig_state = px.bar(
+            late_state.head(10),
 
-    fig_state.update_layout(
-        yaxis=dict(
-            autorange="reversed"
-        ),
-        height=310,
-        xaxis_title="Late Delivery Rate",
-        yaxis_title=None
-    )
+            x="late_delivery_rate",
 
-    style_chart(
-        fig_state
-    )
+            y="customer_state",
 
-    st.plotly_chart(
-        fig_state,
-        use_container_width=True
-    )
+            orientation="h",
+
+            title=(
+                "States with Highest "
+                "Late Delivery Rates"
+            )
+        )
+
+        fig_state.update_traces(
+            marker_color=RED
+        )
+
+        fig_state.update_xaxes(
+            tickformat=".0%"
+        )
+
+        fig_state.update_layout(
+            yaxis=dict(
+                autorange="reversed"
+            ),
+
+            height=310,
+
+            xaxis_title=(
+                "Late Delivery Rate"
+            ),
+
+            yaxis_title=None
+        )
+
+        style_chart(
+            fig_state
+        )
+
+        st.plotly_chart(
+            fig_state,
+            use_container_width=True
+        )
 
 
 # ==================================================
@@ -2088,6 +2840,13 @@ if user_question:
                 st.caption(
                     "Visualization generated from "
                     "approved SQL-derived Olist data."
+                )
+
+            else:
+
+                st.caption(
+                    "No additional visualization "
+                    "is available for this analysis."
                 )
 
 
